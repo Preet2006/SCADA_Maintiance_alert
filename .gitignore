@@ -1,0 +1,23 @@
+# Ignore all python scripts and other files
+*.py
+*.exe
+*.png
+*.jpg
+*.jpeg
+*.csv
+*.pkl
+*.cbm
+*.joblib
+
+# Ignore environment and caches
+.venv/
+__pycache__/
+catboost_info/
+
+# EXPLICITLY allow the files you want to push
+!api.py
+!requirements.txt
+!Procfile
+!future_model.joblib
+!future_scaler.joblib
+!future_model_features.joblib

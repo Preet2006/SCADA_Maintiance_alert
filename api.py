@@ -2,11 +2,15 @@ from flask import Flask, request, jsonify
 import pandas as pd
 import joblib
 import numpy as np
+import os
 
-# ✅ Load saved artifacts
-model = joblib.load("C:/Users/preet/OneDrive/Desktop/PS2/future_model.joblib")
-scaler = joblib.load("C:/Users/preet/OneDrive/Desktop/PS2/future_scaler.joblib")
-feature_names = joblib.load("C:/Users/preet/OneDrive/Desktop/PS2/future_model_features.joblib")
+# ✅ Get the current directory path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# ✅ Load saved artifacts using relative paths
+model = joblib.load(os.path.join(BASE_DIR, "future_model.joblib"))
+scaler = joblib.load(os.path.join(BASE_DIR, "future_scaler.joblib"))
+feature_names = joblib.load(os.path.join(BASE_DIR, "future_model_features.joblib"))
 
 app = Flask(__name__)
 
@@ -38,8 +42,9 @@ def predict():
         prediction = model.predict(scaled_input)[0]
 
         return jsonify({"prediction": int(prediction)})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)

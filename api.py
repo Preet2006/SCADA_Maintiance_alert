@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pandas as pd
 import joblib
 import numpy as np
@@ -13,10 +14,15 @@ scaler = joblib.load(os.path.join(BASE_DIR, "future_scaler.joblib"))
 feature_names = joblib.load(os.path.join(BASE_DIR, "future_model_features.joblib"))
 
 app = Flask(__name__)
+CORS(app)  # optional if calling from browser
 
 @app.route("/", methods=["GET"])
 def home():
     return "✅ Predictive Maintenance API is up and running."
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"}), 200
 
 @app.route("/predict", methods=["POST"])
 def predict():

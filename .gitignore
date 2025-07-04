@@ -1,5 +1,7 @@
-# Ignore all python scripts and other files
+# Ignore all Python files by default
 *.py
+
+# Ignore common artifacts
 *.exe
 *.png
 *.jpg
@@ -8,13 +10,14 @@
 *.pkl
 *.cbm
 *.joblib
+api.log
 
-# Ignore environment and caches
+# Ignore Python environment and cache
 .venv/
 __pycache__/
 catboost_info/
 
-# EXPLICITLY allow the files you want to push
+# EXPLICITLY allow only the needed files
 !api.py
 !requirements.txt
 !Procfile

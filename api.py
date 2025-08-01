@@ -35,12 +35,22 @@ app.logger.addHandler(console_handler)
 
 # Load artifacts
 try:
-    model = joblib.load(MODEL_PATH)
+    model_config = joblib.load(MODEL_PATH)
+    model = model_config['model']
+    model_use_encoded = model_config['use_encoded']
     scaler = joblib.load(SCALER_PATH)
     feature_names = joblib.load(FEATURES_PATH)
+    
+    # Load label encoders if they exist
+    label_encoders_path = os.path.join(BASE_DIR, "label_encoders.joblib")
+    label_encoders = {}
+    if os.path.exists(label_encoders_path):
+        label_encoders = joblib.load(label_encoders_path)
+    
     explainer = shap.TreeExplainer(model)
     app.logger.info("Model artifacts loaded successfully")
     app.logger.info(f"Model classes: {model.classes_}")
+    app.logger.info(f"Model uses encoded data: {model_use_encoded}")
     app.logger.info(f"Explainer expected value shape: {np.array(explainer.expected_value).shape}")
 except Exception as e:
     app.logger.error(f"Failed to load model artifacts: {str(e)}")
@@ -130,13 +140,21 @@ def predict():
         input_df = pd.DataFrame([data])[feature_names]
         
         # Handle categoricals
-        if 'SHIFT' in feature_names:
-            input_df['SHIFT'] = input_df['SHIFT'].astype(str)
+        categorical_cols = ['SHIFT']  # Add other categorical columns if needed
+        for col in categorical_cols:
+            if col in feature_names:
+                input_df[col] = input_df[col].astype(str)
         
         # Scale features
-        numerical_cols = [col for col in feature_names if col != 'SHIFT']
+        numerical_cols = [col for col in feature_names if col not in categorical_cols]
         scaled_data = input_df.copy()
         scaled_data[numerical_cols] = scaler.transform(input_df[numerical_cols])
+        
+        # Encode categorical features if model requires it
+        if model_use_encoded:
+            for col in categorical_cols:
+                if col in feature_names and col in label_encoders:
+                    scaled_data[col] = label_encoders[col].transform(scaled_data[col])
         
         # Make prediction
         prediction = int(model.predict(scaled_data)[0])
